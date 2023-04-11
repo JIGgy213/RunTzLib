@@ -1,0 +1,187 @@
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local Window = Library.CreateLib("FIVEDUELS SILENT AIM GUI by YT: RunTzSploits", "Midnight")
+
+
+-- Main
+local Main = Window:NewTab("Main")
+local MainSection = Main:NewSection("Main")
+
+MainSection:NewButton("Silent Aim", "Enable the silent aim.", function()
+    --[[
+   Made by Rileyy#0808
+   FiveDuels silent aim.lua
+   as for prediction, use basic velocity prediction sets, 0.1377 works pretty well though
+]]
+
+getgenv().user_settings = {
+    enabled = true,
+    hitbox = 'HumanoidRootPart',
+ 
+    fov_radius = 200,
+    prediction = 0.1377 -- you can use this or 0,
+ }
+ 
+ --// VARIABLES
+ local players = game:GetService('Players')
+ local runservice = game:GetService('RunService')
+ local userinputservice = game:GetService('UserInputService')
+ 
+ local current_camera = workspace.CurrentCamera
+ local local_player = players.LocalPlayer
+ local mouse = local_player:GetMouse()
+ 
+ local client = {}
+ 
+ local fov_circle = Drawing.new('Circle')
+ fov_circle.Visible = true
+ fov_circle.Color = Color3.new(1, 1, 1)
+ fov_circle.Thickness = 1
+ 
+ 
+ 
+ runservice.PostSimulation:Connect(function()
+    local mouse_position = userinputservice:GetMouseLocation()
+    
+    fov_circle.Radius = user_settings.fov_radius
+    fov_circle.Position = mouse_position
+ 
+    client.target = nil
+    client.target_distance = fov_circle.Radius
+ 
+    for _, player in next, players:GetChildren() do
+        local humanoidrootpart = player.Character and player.Character:FindFirstChild('HumanoidRootPart')
+        local humanoid = player.Character and player.Character:FindFirstChildWhichIsA('Humanoid')
+ 
+        if not humanoidrootpart or not humanoid then
+            continue
+        end
+ 
+        if humanoid.Health <= 0 then
+            continue
+        end
+ 
+        local screen_position, screen_visible = current_camera:WorldToViewportPoint(humanoidrootpart.Position); screen_position = Vector2.new(screen_position.X, screen_position.Y)
+        local mouse_distance = (screen_position - mouse_position).magnitude
+ 
+        if not screen_visible then
+            continue
+        end
+ 
+        if mouse_distance < client.target_distance then
+            client.target = player
+            client.target_distance = mouse_distance
+        end
+    end
+ end)
+ 
+ local namecall; namecall = hookmetamethod(game, '__namecall', function(obj, ...)
+    local args = {...}
+    local method = getnamecallmethod()
+ 
+    if method == 'FireServer' and obj.Name == 'RemoteEvent' and args[1] == 'shoot' and client.target and client.target.Character[user_settings.hitbox] then
+        args[2][1] = client.target.Character[user_settings.hitbox].Position + (client.target.Character.HumanoidRootPart.Velocity * user_settings.prediction)
+    end
+ 
+    return namecall(obj, unpack(args))
+ end)
+end)
+
+MainSection:NewSlider("FOV Radius", "Change the FOV Radius", 800, 50, function(s) -- 800 (MaxValue) | 50 (MinValue)
+    getgenv().user_settings.fov_radius = s
+end)
+
+MainSection:NewSlider("Prediction", "Change the amount of prediction", 1, 0.1337, function(s) -- 1 (MaxValue) | 0.1337 (MinValue)
+    getgenv().user_settings.prediction = s
+end)
+
+----Player Section
+local Player = Window:NewTab("Player")
+local PlayerSection = Player:NewSection("Player")
+
+PlayerSection:NewToggle("Super Speed", "Run faster.", function(state)
+    if state then
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100     
+    else
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16      
+    end
+end)
+
+PlayerSection:NewToggle("INF Jump", "INF Jump", function(state)
+    if state then
+        --Toggles the infinite jump between on or off on every script run
+_G.infinjump = not _G.infinjump
+
+if _G.infinJumpStarted == nil then
+	--Ensures this only runs once to save resources
+	_G.infinJumpStarted = true
+	
+	--The actual infinite jump
+	local plr = game:GetService('Players').LocalPlayer
+	local m = plr:GetMouse()
+	m.KeyDown:connect(function(k)
+		if _G.infinjump then
+			if k:byte() == 32 then
+			humanoid = game:GetService'Players'.LocalPlayer.Character:FindFirstChildOfClass('Humanoid')
+			humanoid:ChangeState('Jumping')
+			wait()
+			humanoid:ChangeState('Seated')
+			end
+		end
+	end)
+end
+    else
+    --Toggles the infinite jump between on or off on every script run
+_G.infinjump = not _G.infinjump
+
+if _G.infinJumpStarted == nil then
+	--Ensures this only runs once to save resources
+	_G.infinJumpStarted = true
+	
+
+	--The actual infinite jump
+	local plr = game:GetService('Players').LocalPlayer
+	local m = plr:GetMouse()
+	m.KeyDown:connect(function(k)
+		if _G.infinjump then
+			if k:byte() == 32 then
+			humanoid = game:GetService'Players'.LocalPlayer.Character:FindFirstChildOfClass('Humanoid')
+			humanoid:ChangeState('Jumping')
+			wait()
+			humanoid:ChangeState('Seated')
+			end
+		end
+	end)
+end
+    end
+end)
+
+----Credits
+local Credits = Window:NewTab("Credits")
+local CreditsSection = Credits:NewSection("Credits")
+
+CreditsSection:NewButton("Join The Discord //(Synapse func)", "https://discord.gg/33e3ygXb6E", function()
+    syn.request({
+        Url = "http://127.0.0.1:6463/rpc?v=1",
+        Method = "POST",
+        Headers = {
+            ["Content-Type"] = "application/json",
+            ["Origin"] = "https://discord.com"
+        },
+        Body = game:GetService("HttpService"):JSONEncode({
+            cmd = "INVITE_BROWSER",
+            args = {
+                code = "33e3ygXb6E"
+            },
+            nonce = game:GetService("HttpService"):GenerateGUID(false)
+        }),
+     })
+end)
+
+CreditsSection:NewButton("Click to copy: Discord link", "Link to the Discord", function()
+    setclipboard("https://discord.gg/33e3ygXb6E")
+end)
+
+CreditsSection:NewButton("Click to copy: RunTzSploits#8182", "My discord.", function()
+    setclipboard("RunTzSploits#8182")
+end)
+
